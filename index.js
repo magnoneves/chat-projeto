@@ -5,10 +5,8 @@ const { Server: SocketIOServer } = require('socket.io');
 const path = require('path');
 const cors = require('cors');
 
-// Caminho absoluto para a pasta 'www'
 const publicPath = path.join(__dirname, 'www');
 
-// Cria o aplicativo Express e o servidor HTTP
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
@@ -18,7 +16,6 @@ const io = new SocketIOServer(server, {
     }
 });
 
-// Configuração do CORS
 const corsOptions = {
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -26,12 +23,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Serve o arquivo index.html diretamente
 app.get('/', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Configuração do banco de dados
 const mysqli = mysql2.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -50,7 +45,6 @@ mysqli.connect((err) => {
 io.on('connection', (socket) => {
     console.log("Um usuário está conectado");
 
-    // Enviar mensagens antigas ao novo cliente
     mysqli.query("SELECT * FROM mensagens ORDER BY criado_em ASC", (err, results) => {
         if (err) {
             console.error("Erro ao buscar mensagens:", err);
@@ -61,7 +55,7 @@ io.on('connection', (socket) => {
 
     // Login do usuário
     socket.on('login', (nome) => {
-        console.log(`Login tentativa: ${nome}`); // Log de tentativa de login
+        console.log(`Login tentativa: ${nome}`); 
         mysqli.query("SELECT * FROM usuarios WHERE nome = ?", [nome], (err, results) => {
             if (err) {
                 console.error("Erro ao verificar usuário:", err);
@@ -76,7 +70,6 @@ io.on('connection', (socket) => {
         });
     });
 
-    // Recebendo e salvando novas mensagens
     socket.on('mensagem', (data) => {
         const { mensagem, nome } = data;
         mysqli.query("INSERT INTO mensagens (mensagem, nome) VALUES (?, ?)", [mensagem, nome], (err) => {
