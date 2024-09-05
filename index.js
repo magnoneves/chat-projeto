@@ -27,25 +27,20 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-const mysqli = mysql2.createConnection({
+const pool = mysql2.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
-
-mysqli.connect((err) => {
-    if (err) {
-        console.error("Erro ao conectar ao banco de dados:", err);
-        return;
-    }
-    console.log("Conectado ao banco com sucesso");
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 io.on('connection', (socket) => {
     console.log("Um usuário está conectado");
 
-    mysqli.query("SELECT * FROM mensagens ORDER BY criado_em ASC", (err, results) => {
+    pool.query("SELECT * FROM mensagens ORDER BY criado_em ASC", (err, results) => {
         if (err) {
             console.error("Erro ao buscar mensagens:", err);
             return;
@@ -56,7 +51,7 @@ io.on('connection', (socket) => {
     // Login do usuário
     socket.on('login', (nome) => {
         console.log(`Login tentativa: ${nome}`); 
-        mysqli.query("SELECT * FROM usuarios WHERE nome = ?", [nome], (err, results) => {
+        pool.query("SELECT * FROM usuarios WHERE nome = ?", [nome], (err, results) => {
             if (err) {
                 console.error("Erro ao verificar usuário:", err);
                 socket.emit('loginResposta', { sucesso: false, mensagem: "Erro no servidor" });
@@ -72,7 +67,7 @@ io.on('connection', (socket) => {
 
     socket.on('mensagem', (data) => {
         const { mensagem, nome } = data;
-        mysqli.query("INSERT INTO mensagens (mensagem, nome) VALUES (?, ?)", [mensagem, nome], (err) => {
+        pool.query("INSERT INTO mensagens (mensagem, nome) VALUES (?, ?)", [mensagem, nome], (err) => {
             if (err) {
                 console.error("Erro ao inserir mensagem:", err);
                 return;
