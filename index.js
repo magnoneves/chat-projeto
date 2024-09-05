@@ -11,7 +11,12 @@ const publicPath = path.join(__dirname, 'www');
 // Cria o aplicativo Express e o servidor HTTP
 const app = express();
 const server = http.createServer(app);
-const io = new SocketIOServer(server);
+const io = new SocketIOServer(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
 
 // Configuração do CORS
 const corsOptions = {
