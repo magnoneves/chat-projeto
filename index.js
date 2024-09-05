@@ -56,6 +56,7 @@ io.on('connection', (socket) => {
 
     // Login do usuário
     socket.on('login', (nome) => {
+        console.log(`Login tentativa: ${nome}`); // Log de tentativa de login
         mysqli.query("SELECT * FROM usuarios WHERE nome = ?", [nome], (err, results) => {
             if (err) {
                 console.error("Erro ao verificar usuário:", err);
