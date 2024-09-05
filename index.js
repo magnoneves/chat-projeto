@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
     console.log("Um usuário está conectado");
 
     // Enviar mensagens antigas ao novo cliente
-    mysqli.query("SELECT * FROM mensagens ORDER BY criado_em DESC", (err, results) => {
+    mysqli.query("SELECT * FROM mensagens ORDER BY criado_em ASC", (err, results) => {
         if (err) {
             console.error("Erro ao buscar mensagens:", err);
             return;
